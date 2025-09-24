@@ -1,0 +1,30 @@
+
+
+
+
+
+Architecture
+
+yocto-project/
+│
+├── build/                # diretório de builds (gerado pelo bitbake)
+│
+├── meta-got/           # camada customizada principal
+│   ├── conf/
+│   │   └── layer.conf
+│   │
+│   ├── recipes-bsp/      # BSP - Board Support Package
+│   │   └── u-boot/
+│   │       ├── u-boot_%.bbappend   # ajustes do U-Boot
+│   │       ├── files/
+│   │       │   ├── configs/        # defconfigs para as placas
+│   │       │   └── patches/        # patches específicos
+│   │
+│   ├── recipes-kernel/   # Kernel (vai entrar depois)
+│   │   └── linux/
+│   │
+│   ├── recipes-apps/     # Aplicações de usuário
+│   │   └── ...
+│
+└── poky/                 # Yocto base (poky, oe-core, bitbake, etc.)
+
