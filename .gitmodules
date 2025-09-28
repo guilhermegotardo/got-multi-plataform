@@ -4,3 +4,6 @@
 [submodule "layers/meta-raspberrypi"]
 	path = layers/meta-raspberrypi
 	url = https://git.yoctoproject.org/meta-raspberrypi
+[submodule "sources/u-boot/u-boot"]
+	path = sources/u-boot/u-boot
+	url = https://source.denx.de/u-boot/u-boot.git
