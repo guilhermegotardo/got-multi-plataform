@@ -1,4 +1,6 @@
 #!/bin/sh
-BUILDDIR="../build"
-cd poky
-. ./oe-init-build-env $BUILDDIR
+POKYDIR="poky"
+BUILDDIR="build"
+
+# importante: usar caminho absoluto
+. $POKYDIR/oe-init-build-env $BUILDDIR
