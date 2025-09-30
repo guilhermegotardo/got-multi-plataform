@@ -1,30 +1,67 @@
+# Multi-platform Yocto Project with Custom U-Boot and Kernel
 
+This project is a Yocto-based build system designed to support multiple platforms.  
+It provides a clean separation between the main bootloader, kernel, and applications, allowing easy customization and reproducibility.
 
+---
 
+## 🏗️ Project Goal
 
+- Build a **multi-platform Yocto environment**.  
+- Start from **U-Boot** customization for Raspberry Pi 3.  
+- Extend later to Linux kernel and user-space applications.
+- Customize another boards. 
 
-Architecture
+---
+
+## 📂 Directory Architecture
 
 yocto-project/
-│
-├── build/                # diretório de builds (gerado pelo bitbake)
-│
-├── meta-got/           # camada customizada principal
-│   ├── conf/
-│   │   └── layer.conf
-│   │
-│   ├── recipes-bsp/      # BSP - Board Support Package
-│   │   └── u-boot/
-│   │       ├── u-boot_%.bbappend   # ajustes do U-Boot
-│   │       ├── files/
-│   │       │   ├── configs/        # defconfigs para as placas
-│   │       │   └── patches/        # patches específicos
-│   │
-│   ├── recipes-kernel/   # Kernel (vai entrar depois)
-│   │   └── linux/
-│   │
-│   ├── recipes-apps/     # Aplicações de usuário
-│   │   └── ...
-│
-└── poky/                 # Yocto base (poky, oe-core, bitbake, etc.)
+├── poky/ # Poky (core Yocto distribution)
+├── build/ # Yocto build output (tmp, deploy, sstate, etc.)
+├── layers/ # Custom and external layers
+│ ├── meta-raspberrypi/ # BSP for Raspberry Pi boards
+│ └── meta-got/ # Custom layer (U-Boot, Kernel, Apps)
+│ └── recipes-bsp/
+│ └── u-boot/
+│ └── u-boot_%.bbappend
+└── sources/ # Fixed external sources
+├── u-boot/ # U-Boot related sources
+│ └── u-boot_2024-01/ # U-Boot source tree (2024.01)
+└── rpi-boot/ # Optional: firmware, config.txt, cmdline.txt, etc.
 
+## 🚀 Workflow
+
+1. **Initialize build environment**
+   ```bash
+   source poky/oe-init-build-env build
+Build U-Boot for Raspberry Pi 3
+bitbake u-boot
+
+Customize U-Boot
+
+Defconfig: sources/u-boot/u-boot_2024-01/configs/rpi_3_got_defconfig
+
+Patches: keep in sources/u-boot/patches/
+
+Managed in meta-got/recipes-bsp/u-boot/u-boot_%.bbappend
+
+Generated files
+
+Final binaries are deployed in:
+build/tmp/deploy/images/raspberrypi3/
+
+🔧 Next Steps
+Add Linux kernel sources under sources/linux/.
+
+Extend meta-got with recipes for custom applications.
+
+Integrate boot firmware (start.elf, fixup.dat, config.txt) into the deployment flow.
+
+📌 Notes
+FILESEXTRAPATHS is used to point to external source directories.
+
+U-Boot defconfig is set by:
+
+bitbake
+UBOOT_MACHINE = "rpi_3_got_defconfig"
