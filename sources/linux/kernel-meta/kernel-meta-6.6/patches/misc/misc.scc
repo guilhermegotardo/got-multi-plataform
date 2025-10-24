@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT
+patch vmware-include-jiffies.h.patch
+# merged upstream
+#patch drivers-misc-pch_phub.c-don-t-oops-if-dmi_get_system.patch
+patch compiler.h-Undef-before-redefining-__attribute_const.patch
+patch uvesafb-print-error-message-when-task-timeout-occurs.patch
+patch uvesafb-provide-option-to-specify-timeout-for-task-c.patch
+patch linux-yocto-Handle-bin-awk-issues.patch
+patch arm64-perf-fix-backtrace-for-AAPCS-with-FP-enabled.patch
+patch defconfigs-drop-obselete-options.patch
+patch arm64-perf-Fix-wrong-cast-that-may-cause-wrong-trunc.patch
+patch net-dccp-make-it-depend-on-CONFIG_BROKEN-CVE-2020-16.patch
+patch iwlwifi-select-MAC80211_LEDS-conditionally.patch
+patch vt-conmakehash-improve-reproducibility.patch
+patch lib-build_OID_registry-fix-reproducibility-issues.patch
+patch tools-use-basename-to-identify-file-in-gen-mach-type.patch
+patch pnmtologo-use-relocatable-file-name.patch

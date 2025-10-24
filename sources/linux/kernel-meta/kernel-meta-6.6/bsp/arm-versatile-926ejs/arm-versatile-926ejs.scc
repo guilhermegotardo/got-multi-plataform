@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT
+kconf hardware arm-versatile-926ejs.cfg
+kconf hardware arm-versatile-926ejs-gfx.cfg
+
+include features/usb/ohci-hcd.scc
+
+include features/net/net.scc
+include features/pci/pci.scc
+include cfg/virtio.scc

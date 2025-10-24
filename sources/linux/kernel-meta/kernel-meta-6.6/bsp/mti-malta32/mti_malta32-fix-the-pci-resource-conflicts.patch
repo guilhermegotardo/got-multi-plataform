@@ -1,0 +1,109 @@
+From e4a8151a5225a9a547c70066e1c11f6b8206f73a Mon Sep 17 00:00:00 2001
+From: Jack Tan <jack.tan@windriver.com>
+Date: Wed, 10 Mar 2010 15:05:39 +0800
+Subject: [PATCH] mti_malta32: fix the pci resource conflicts
+
+commit id 79896cf42f use request_resource() to replace the
+insert_resource() in pci_claim_resource(). But this does
+not fit the malta pci. With the new request_resource()
+kernel allocate a collision io resource for PCI ethernet.
+This disturb the PCI io space. One device use 0x1000 - 0x103f
+and the PCI ethernet use 0x1020 - 0x103f and this is cause the
+ethernet can't be accessed.
+
+This fix supplies a fixup function to fix the ioport collision.
+
+The old kernel log:
+
+pci 0000:00:0a.1: BAR 4: assigned [io  0x1040-0x104f]
+pci 0000:00:0a.1: BAR 4: set to [io  0x1040-0x104f] (PCI address [0x1040-0x104f]
+pci 0000:00:0a.2: BAR 4: assigned [io  0x1000-0x101f]
+pci 0000:00:0a.2: BAR 4: set to [io  0x1000-0x101f] (PCI address [0x1000-0x101f]
+pci 0000:00:0a.3: address space collision: [io  0x1000-0x103f] already in use
+pci 0000:00:0a.3: quirk: [io  0x1000-0x103f] claimed by PIIX4 ACPI
+pci 0000:00:0a.3: address space collision: [io  0x1100-0x110f] already in use
+pci 0000:00:0a.3: quirk: [io  0x1100-0x110f] claimed by PIIX4 SMB
+pci 0000:00:0a.3: BAR 7: [io  0x1000-0x103f] has bogus alignment
+pci 0000:00:0a.3: BAR 8: [io  0x1100-0x110f] has bogus alignment
+pci 0000:00:0b.0: BAR 0: assigned [io  0x1020-0x103f]
+pci 0000:00:0b.0: BAR 0: set to [io  0x1020-0x103f] (PCI address [0x1020-0x103f]
+pci 0000:00:0b.0: BAR 1: assigned [mem 0x10111000-0x1011101f]
+pci 0000:00:0b.0: BAR 1: set to [mem 0x10111000-0x1011101f] (PCI address [0x10111000-0x1011101f]
+pci 0000:00:0b.0: BAR 6: assigned [mem 0x10000000-0x100fffff pref]
+pci 0000:00:0c.0: BAR 0: assigned [mem 0x10110000-0x10110fff]
+pci 0000:00:0c.0: BAR 0: set to [mem 0x10110000-0x10110fff] (PCI address [0x10110000-0x10110fff]
+pci 0000:00:0c.0: BAR 1: assigned [mem 0x10100000-0x1010ffff]
+pci 0000:00:0c.0: BAR 1: set to [mem 0x10100000-0x1010ffff] (PCI address [0x10100000-0x1010ffff]
+......
+pcnet32.c:v1.35 21.Apr.2008 tsbogend@alpha.franken.de
+pcnet32: No access methods
+......
+......
+
+And a fixup to the original change:
+
+[
+   mips: malta PCI fixup, fix __init annotation warning
+
+   Currently we see the following link warning:
+
+     WARNING: vmlinux.o(.pci_fixup_final+0xefc): Section mismatch in
+     reference from the variable __pci_fixup_malta_pcnet32_ioports_fixup164
+     to the function .init.text:malta_pcnet32_ioports_fixup()
+     The variable __pci_fixup_malta_pcnet32_ioports_fixup164 references
+     a function __init malta_pcnet32_ioports_fixup().
+     This is often seen when error handling in the init function
+     uses functionality in the exit path.
+     The fix is often to remove the __init annotation of
+     malta_pcnet32_ioports_fixup() so it may be used outside an exit section.
+
+   This is from the addition of "mti_malta32: fix the pci resource conflicts"
+   (5c19c1c31c77 on v5.2/standard/mti-malta32) - which is a relatively old
+   commit, but w/o a malta+PCnet32, I can't speak to whether this commit is
+   still needed, or if the PCI resource overlap was solved another way.
+
+   Hence here, we take the safe path and just remove the __init annotation.
+]
+
+Signed-off-by: Jack Tan <jack.tan@windriver.com>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Signed-off-by: Bruce Ashfield <bruce.ashfield@gmail.com>
+---
+ arch/mips/pci/fixup-malta.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/arch/mips/pci/fixup-malta.c b/arch/mips/pci/fixup-malta.c
+index 8131e0ffe735..df1cae42ff9e 100644
+--- a/arch/mips/pci/fixup-malta.c
++++ b/arch/mips/pci/fixup-malta.c
+@@ -142,6 +142,27 @@ static void malta_piix_func1_fixup(struct pci_dev *pdev)
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82371AB,
+ 	 malta_piix_func1_fixup);
+ 
++/* Use the io resource allocated by YAMON */
++static void malta_pcnet32_ioports_fixup(struct pci_dev *pdev)
++{
++	u32 check = 0, new = 0x1060;
++
++	pdev->resource[0].start = new;
++	pdev->resource[0].end = new + 0x1f;
++
++	pci_write_config_dword(pdev, 0x10, new);
++	pci_read_config_dword(pdev, 0x10, &check);
++
++	if ((new ^ check) & (u32)PCI_BASE_ADDRESS_IO_MASK)
++		printk(KERN_WARNING "pcnet32's BAR0 error updating (%#08x != %#08x)\n",
++				check, new);
++	else
++		printk(KERN_NOTICE "pcnet32's BAR0 updating is successful!\n");
++}
++
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_LANCE,
++	malta_pcnet32_ioports_fixup);
++
+ /* Enable PCI 2.1 compatibility in PIIX4 */
+ static void quirk_dlcsetup(struct pci_dev *dev)
+ {
+-- 
+2.19.1
+

@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT
+define KMACHINE intel-x86-32
+define KTYPE tiny
+define KARCH i386
+
+include ktypes/tiny/tiny.scc
+branch x86
+
+include bsp/intel-x86/intel-x86-32.scc

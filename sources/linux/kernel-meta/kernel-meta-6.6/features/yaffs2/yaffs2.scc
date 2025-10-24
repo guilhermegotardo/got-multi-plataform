@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: MIT
+patch yaffs2-import-git-revision-b4ce1bb-jan-2020.patch
+patch yaffs2-adjust-to-proper-location-of-MS_RDONLY.patch
+patch fs-yaffs2-replace-CURRENT_TIME-by-other-appropriate-.patch
+patch Yaffs-check-oob-size-before-auto-selecting-Yaffs1.patch
+patch yaffs-Avoid-setting-any-ACL-releated-xattr.patch
+patch yaffs2-fix-memory-leak-in-mount-umount.patch
+patch yaffs-Fix-build-failure-by-handling-inode-i_version-.patch
+patch yaffs-repair-yaffs_get_mtd_device.patch
+patch yaffs-add-strict-check-when-call-yaffs_internal_read.patch
+patch yaffs2-fix-memory-leak-when-proc-yaffs-is-read.patch
+patch yaffs2-v5.6-build-fixups.patch
+patch yaffs-fix-misplaced-variable-declaration.patch
+patch yaffs-include-blkdev.h.patch
+patch 0001-yaffs2-v5.12-build-fixups-not-runtime-tested.patch
+patch yaffs-fix-Wstringop-overread-compile-warning-in-yaff.patch
+patch yaffs-replace-IS_ERR-with-IS_ERR_OR_NULL-to-check-bo.patch
+patch 0001-yaffs2-convert-read_page-readfolio.patch
+patch 0001-yaffs2-replace-bdevname-call-with-sprintf.patch 
+patch yaffs2-convert-user_namespace-to-mnt_idmap.patch
+patch yaffs2-Fix-miscalculation-of-devname-buffer-length.patch
+patch yaffs2-v6.5-fixups.patch
+patch 0001-yaffs2-update-VFS-ctime-operations-to-6.6.patch

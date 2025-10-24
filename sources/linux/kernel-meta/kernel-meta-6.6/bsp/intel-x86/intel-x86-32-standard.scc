@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT
+define KMACHINE intel-x86-32
+define KTYPE standard
+define KARCH i386
+
+include ktypes/standard
+branch x86
+include features/transparent-hugepage/transparent-hugepage.scc
+include intel-x86-32.scc
+kconf hardware cfs-bandwidth.cfg

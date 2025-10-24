@@ -1,0 +1,7 @@
+include xt-checksum.scc
+include ebtables.scc
+include features/vswitch/vswitch.scc
+include features/lxc/lxc-enable.scc
+include features/docker/docker.scc
+include cgroup.scc
+
