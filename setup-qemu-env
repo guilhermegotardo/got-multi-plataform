@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    echo "Err: Load this script with source:"
+    echo "  source ./setup-qemu-env"
+    exit 1
+fi
+
+PROJECT_ROOT="$(
+    cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1
+    pwd
+)"
+
+OE_INIT="${PROJECT_ROOT}/build/poky/layers/openembedded-core/oe-init-build-env"
+BUILD_DIR="${PROJECT_ROOT}/build/poky/build-qemu"
+
+if [[ ! -f "${OE_INIT}" ]]; then
+    echo "Err: oe-init-build-env not found in:"
+    echo "  ${OE_INIT}"
+    return 1
+fi
+
+source "${OE_INIT}" "${BUILD_DIR}"

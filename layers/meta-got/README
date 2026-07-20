@@ -1,0 +1,54 @@
+This README file contains information on the contents of the meta-got layer.
+
+Please see the corresponding sections below for details.
+
+Dependencies
+============
+
+  URI: <first dependency>
+  branch: <branch name>
+
+  URI: <second dependency>
+  branch: <branch name>
+
+  .
+  .
+  .
+
+Patches
+=======
+
+Please submit any patches against the meta-got layer to the xxxx mailing list (xxxx@zzzz.org)
+and cc: the maintainer:
+
+Maintainer: XXX YYYYYY <xxx.yyyyyy@zzzzz.com>
+
+Table of Contents
+=================
+
+  I. Adding the meta-got layer to your build
+ II. Misc
+
+
+I. Adding the meta-got layer to your build
+=================================================
+
+Run 'bitbake-layers add-layer meta-got'
+
+II. Misc
+========
+
+--- replace with specific information about the meta-got layer ---
+
+Add local.conf.sample and bblayer.bb.sample to meta-got/conf/templates. It will be the files used in build.
+Then add it to TEMPLATCONF acordding to the machine:
+TEMPLATECONF=../../../layers/meta-got/conf/templates/default/ source init-build-env 
+ source init-build-env 
+
+TEMPLATECONF=/home/gotardo/Dev/Projects/got-target/layers/meta-got/conf/templates/default
+TEMPLATECONF=/home/gotardo/Dev/Projects/got-target/layers/meta-got/conf/templates/qemu
+TEMPLATECONF=/home/gotardo/Dev/Projects/got-target/layers/meta-got/conf/templates/rpi3
+source layers/openembedded-core/oe-init-build-env
+source ../layers/openembedded-core/oe-init-build-env
+
+runqemu qemux86-64 snapshot nographic
