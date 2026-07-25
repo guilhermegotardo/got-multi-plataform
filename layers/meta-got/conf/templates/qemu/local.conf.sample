@@ -6,5 +6,12 @@
 # layer fragments from changes made here.
 #
 MACHINE ??= "qemux86-64"
+
+DISTRO = "got"
+
+INIT_MANAGER = "systemd"
+
+EXTRA_IMAGE_FEATURES += " ssh-server-openssh"
+
 OE_FRAGMENTS += "meta-got/yocto/root-login-with-empty-password"
 OE_FRAGMENTS += "core/yocto/sstate-mirror-cdn"
