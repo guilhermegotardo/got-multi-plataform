@@ -1,4 +1,4 @@
-# Got Target Environment
+# Got Plataform Environment
 
 This project provides a script to install and configure the development environment.
 
