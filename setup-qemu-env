@@ -12,8 +12,8 @@ PROJECT_ROOT="$(
 )"
 
 export TEMPLATECONF="${PROJECT_ROOT}/layers/meta-got/conf/templates/qemu"
-OE_INIT="${PROJECT_ROOT}/build/poky/layers/openembedded-core/oe-init-build-env"
-BUILD_DIR="${PROJECT_ROOT}/build/poky/build-qemu"
+OE_INIT="${PROJECT_ROOT}/build/poky-env/layers/openembedded-core/oe-init-build-env"
+BUILD_DIR="${PROJECT_ROOT}/build/poky-env/build-qemu"
 
 if [[ ! -f "${OE_INIT}" ]]; then
     echo "Err: oe-init-build-env not found in:"

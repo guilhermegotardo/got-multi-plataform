@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+FORCE=false
+CONTINUE_INSTALL=false
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+BITBAKE_DIR="${ROOT_DIR}/bitbake"
+SETUP_DIR_NAME="${SETUP_DIR_NAME:-poky-env}"
+SETUP_DIR="${ROOT_DIR}/build"
+
+BITBAKE_BRANCH="${BITBAKE_BRANCH:-master}"
+CONFIG_TEMPLATE="${CONFIG_TEMPLATE:-poky-master}"
+BITBAKE_CONFIG="${BITBAKE_CONFIG:-poky}"
+DISTRO="${DISTRO:-distro/poky}"
+MACHINE="${MACHINE:-machine/qemux86-64}"
+
+
+configure_bitbake_apparmor() {
+    local bitbake_bin="$1"
+    local profile_file="/etc/apparmor.d/bitbake"
+    local temporary_profile
+
+    if [[ ! -f "$bitbake_bin" ]]; then
+        echo "BitBake not found in: $bitbake_bin" >&2
+        return 1
+    fi
+
+    bitbake_bin="$(realpath "$bitbake_bin")"
+    temporary_profile="$(mktemp)"
+
+    cat > "$temporary_profile" <<EOF
+abi <abi/5.0>,
+include <tunables/global>
+
+profile bitbake ${bitbake_bin} flags=(unconfined) {
+  userns,
+}
+EOF
+
+    echo "Configuring AppArmor for:"
+    echo "  $bitbake_bin"
+
+    sudo apparmor_parser -r "$temporary_profile"
+
+    sudo install \
+        --owner=root \
+        --group=root \
+        --mode=0644 \
+        "$temporary_profile" \
+        "$profile_file"
+
+    rm -f "$temporary_profile"
+
+    echo "AppArmor profile updated: $profile_file"
+}
+
+usage() {
+    echo
+    echo "  -f    Reinstall bitbake environment"
+    echo
+}
+
+while getopts ":fh" option; do
+    case "$option" in 
+        f)
+            FORCE=true
+            ;;
+        h)
+            usage
+            exit 0
+            ;;
+        \?)
+            echo "Invalid Option: -${OPTARG}" >&2
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+cd "$ROOT_DIR"
+
+if [[ "$FORCE" == true ]]; then
+    echo "Reinstalling bitbake environment..."
+    rm -rf "$BITBAKE_DIR" "$SETUP_DIR"
+fi
+
+
+if [[ ! -d "${BITBAKE_DIR}/.git" ]]; then
+    echo "Cloning BitBake, branch ${BITBAKE_BRANCH}..."
+    git clone --branch "$BITBAKE_BRANCH" --single-branch https://git.openembedded.org/bitbake "$BITBAKE_DIR"
+else
+    echo "BitBake already exists in:"
+    echo "  $BITBAKE_DIR"
+fi
+
+BITBAKE_SETUP="${BITBAKE_DIR}/bin/bitbake-setup"
+
+if [[ ! -x "$BITBAKE_SETUP" ]]; then
+    echo "Error: bitbake-setup not found." >&2
+    exit 1
+fi
+
+
+echo "Configuring Poky environment..."
+echo "  Template: $CONFIG_TEMPLATE"
+echo "  Config:   $BITBAKE_CONFIG"
+echo "  Distro:   $DISTRO"
+echo "  Machine:  $MACHINE"
+
+EMPTY_SETTINGS="$(mktemp)"
+trap 'rm -f "$EMPTY_SETTINGS"' EXIT
+
+"$BITBAKE_SETUP" \
+    --global-settings "$EMPTY_SETTINGS" \
+    --setting default top-dir-prefix "$ROOT_DIR" \
+    --setting default top-dir-name "build" \
+    init \
+    --non-interactive \
+    --setup-dir-name "$SETUP_DIR_NAME" \
+    "$CONFIG_TEMPLATE" \
+    "$BITBAKE_CONFIG" \
+    "$DISTRO" \
+    "$MACHINE"
+
+BITBAKE_BIN="${SETUP_DIR}/poky-env/layers/bitbake/bin/bitbake"
+
+echo
+echo "Configuring AppArmor permissions..."
+configure_bitbake_apparmor "$BITBAKE_BIN"
+
+echo
+echo "Got target configured successfully."
+echo
+echo "Active the Target with:"
+echo
+echo " source 'target name'"
+echo
+echo "Then run for exemple:"
+echo
+echo "  bitbake core-image-minimal"
